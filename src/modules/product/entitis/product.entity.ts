@@ -3,6 +3,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } f
 import { ProductColorEnitiy } from "./product-color.entity";
 import { ProductDitelsEnitiy } from "./product-ditels.entity";
 import { ProductSizeEnitiy } from "./product-size.entity";
+import { TypeProduct } from "../enum/product.enum";
 
 
 @Entity(EntityName.Product)
@@ -15,6 +16,8 @@ export class ProductEnitiy{
   content:string
   @Column()
   slug:string
+  @Column({enum:TypeProduct})
+  type:string
   @Column()
   code:string
   @Column()
