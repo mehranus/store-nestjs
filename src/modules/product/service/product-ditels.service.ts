@@ -45,9 +45,9 @@ export class ProductDitelService {
     };
   }
 
-  async find() {
+  async find(productId:number) {
     return await this.productDitelRepository.find({
-      where: {},
+      where: {productId},
 
     });
   }
