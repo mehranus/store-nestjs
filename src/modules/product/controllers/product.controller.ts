@@ -15,6 +15,7 @@ export class ProductController {
   @Post()
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json,TypeData.MultipartData)
   create(@Body() productDto:CreateProductDto){
+    return this.productService.create(productDto)
   }
   @Put(":id")
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json,TypeData.MultipartData)
