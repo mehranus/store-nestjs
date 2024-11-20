@@ -83,6 +83,9 @@ export class ProductService {
     return await this.productRepository.find({
       where: {},
       relations: { color: true, size: true, ditels: true },
+      select:{ditels:{
+        key:true,value:true
+      }}
     });
   }
 

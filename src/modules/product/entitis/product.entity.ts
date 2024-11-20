@@ -20,7 +20,7 @@ export class ProductEnitiy{
   type:string
   @Column()
   code:string
-  @Column()
+  @Column({nullable:true,default:0})
   count:number
   @Column({type:'decimal',nullable:true})
   price:number

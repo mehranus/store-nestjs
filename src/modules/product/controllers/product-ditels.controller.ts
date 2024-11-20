@@ -25,7 +25,7 @@ export class ProductDetilsController {
     return this.productDitelService.create(ditelsDto)
   }
   @Put(":id")
-  @ApiConsumes(TypeData.UrlEncoded, TypeData.Json, TypeData.MultipartData)
+  @ApiConsumes(TypeData.UrlEncoded, TypeData.Json)
   update(
     @Param("id", ParseIntPipe) id: number,
     @Body() ditelsDto: UpdateDitelsDto

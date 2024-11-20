@@ -12,9 +12,7 @@ export class CreateProductDto{
   type:string
   @ApiProperty()
   code:string
- 
-
-  @ApiProperty()
+  @ApiPropertyOptional()
   count:number
   @ApiPropertyOptional({format:'decimal'})
   price:number
