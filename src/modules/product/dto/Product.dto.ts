@@ -12,8 +12,7 @@ export class CreateProductDto{
   type:string
   @ApiProperty()
   code:string
-  @ApiProperty()
-  image:string
+ 
 
   @ApiProperty()
   count:number
@@ -30,18 +29,57 @@ export class UpdateProductDto extends PartialType(CreateProductDto){}
 
 
 //! Color
-export class CreateColorDto{}
+export class CreateColorDto{
+  @ApiProperty()
+  color_name:string
+  @ApiProperty()
+  color_code:string
+
+  @ApiProperty()
+  productId:number
+  @ApiProperty()
+  count:number
+  @ApiPropertyOptional({format:'decimal'})
+  price:number
+  @ApiPropertyOptional({format:'decimal',default:0})
+  discount:number
+  @ApiPropertyOptional({default:false})
+  active_discount:boolean
+}
 
 export class UpdateColorDto extends PartialType(CreateColorDto){}
 
 
 //! Size
-export class CreateSizeDto{}
+export class CreateSizeDto{
+  @ApiProperty()
+  size:string
+
+
+  @ApiProperty()
+  productId:number
+  @ApiProperty()
+  count:number
+  @ApiPropertyOptional({format:'decimal'})
+  price:number
+  @ApiPropertyOptional({format:'decimal',default:0})
+  discount:number
+  @ApiPropertyOptional({default:false})
+  active_discount:boolean
+}
 
 export class UpdateSizeDto extends PartialType(CreateSizeDto){}
 
 
 //! Ditels
-export class CreateDitelsDto{}
+export class CreateDitelsDto{
+  @ApiProperty()
+  key:string
+  @ApiProperty()
+  value:string
+
+  @ApiProperty()
+  productId:number
+}
 
 export class UpdateDitelsDto extends PartialType(CreateDitelsDto){}

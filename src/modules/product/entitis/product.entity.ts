@@ -21,10 +21,6 @@ export class ProductEnitiy{
   @Column()
   code:string
   @Column()
-  image:string
-  @Column()
-  imageKey:string
-  @Column()
   count:number
   @Column({type:'decimal',nullable:true})
   price:number
