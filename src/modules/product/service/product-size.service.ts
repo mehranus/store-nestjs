@@ -32,9 +32,10 @@ export class ProductSizeService {
       await queryRunner.startTransaction()
       const {active_discount,count,discount,price,productId,size}=sizeDto
       let product=await queryRunner.manager.findOneBy(ProductEnitiy,{id:productId})
+    
       if (!product) throw new NotFoundException("product not found!")
         if(product.type === TypeProduct.Singel) throw new BadRequestException("product type of singel!")
-
+        
       await queryRunner.manager.insert(ProductSizeEnitiy,{
         size,
         active_discount:toBoolean(active_discount),
@@ -43,11 +44,13 @@ export class ProductSizeService {
         price,
         productId
       })
+    
       if(!isNaN(parseInt(count.toString())) && +count > 0){
+        console.log(product.count)
         product.count=parseInt(count.toString()) + parseInt(product.count.toString())
+        await queryRunner.manager.save(ProductEnitiy,product)
       }
-      await queryRunner.manager.save(ProductEnitiy,product)
-
+      console.log(product)
       await queryRunner.commitTransaction()
       await queryRunner.release()
       return{
