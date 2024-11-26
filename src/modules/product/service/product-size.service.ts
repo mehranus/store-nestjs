@@ -26,14 +26,14 @@ export class ProductSizeService {
   ) {}
 
   async create(sizeDto: CreateSizeDto) {
-    const {active_discount,count,discount,price,productId,size}=sizeDto
     const queryRunner=this.dataSorece.createQueryRunner()
     await queryRunner.connect()
     try {
       await queryRunner.startTransaction()
-      let product=await this.productServise.findOneLaet(productId)
+      const {active_discount,count,discount,price,productId,size}=sizeDto
+      let product=await queryRunner.manager.findOneBy(ProductEnitiy,{id:productId})
 
-      await this.productSizeRepository.insert({
+      await queryRunner.manager.insert(ProductSizeEnitiy,{
         size,
         active_discount:toBoolean(active_discount),
         count,
@@ -44,7 +44,7 @@ export class ProductSizeService {
       if(count > 0){
         product.count=count + product.count
       }
-      await this.productRepository.save(product)
+      await queryRunner.manager.save(ProductEnitiy,product)
 
       await queryRunner.commitTransaction()
       await queryRunner.release()
