@@ -65,7 +65,7 @@ export class ProductDitelService {
     await this.findOne(id);
     await this.productDitelRepository.delete(id);
     return {
-      message: "deleted delete of product sucsesfully",
+      message: "deleted  of product-ditelses sucsesfully",
     };
   }
 }

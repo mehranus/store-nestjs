@@ -33,6 +33,7 @@ export class ProductSizeService {
       const {active_discount,count,discount,price,productId,size}=sizeDto
       let product=await queryRunner.manager.findOneBy(ProductEnitiy,{id:productId})
       if (!product) throw new NotFoundException("product not found!")
+        if(product.type === TypeProduct.Singel) throw new BadRequestException("product type of singel!")
 
       await queryRunner.manager.insert(ProductSizeEnitiy,{
         size,
@@ -42,13 +43,16 @@ export class ProductSizeService {
         price,
         productId
       })
-      if(count > 0){
-        product.count=count + product.count
+      if(!isNaN(parseInt(count.toString())) && +count > 0){
+        product.count=parseInt(count.toString()) + parseInt(product.count.toString())
       }
       await queryRunner.manager.save(ProductEnitiy,product)
 
       await queryRunner.commitTransaction()
       await queryRunner.release()
+      return{
+        message:"created Size-Product Succesfully"
+      }
     } catch (err) {
       await queryRunner.rollbackTransaction()
       await queryRunner.release()
@@ -75,9 +79,9 @@ export class ProductSizeService {
 
        const perviuseCount=size.count
 
-      if(count > 0){
-        product.count=product.count-perviuseCount
-        product.count=count + product.count
+       if(!isNaN(parseInt(count.toString())) && +count > 0){
+        product.count=parseInt(product.count.toString())-parseInt(perviuseCount.toString())
+        product.count=parseInt(count.toString()) + parseInt(product.count.toString())
         size.count=count
         await queryRunner.manager.save(ProductEnitiy,product)
       }
@@ -85,6 +89,9 @@ export class ProductSizeService {
 
       await queryRunner.commitTransaction()
       await queryRunner.release()
+      return{
+        message:"Update Size-Product Succesfully"
+      }
     } catch (err) {
       await queryRunner.rollbackTransaction()
       await queryRunner.release()
@@ -95,4 +102,28 @@ export class ProductSizeService {
   }
 
 
+
+  async find(productId:number) {
+    return await this.productSizeRepository.find({
+      where: {productId},
+
+    });
+  }
+
+  async findOne(id: number) {
+    const product = await this.productSizeRepository.findOne({
+      where: { id },
+    });
+    if (!product) throw new NotFoundException();
+    return product;
+  }
+
+
+  async delete(id: number) {
+    await this.findOne(id);
+    await this.productSizeRepository.delete(id);
+    return {
+      message: "deleted  of product-size sucsesfully",
+    };
+  }
 }
