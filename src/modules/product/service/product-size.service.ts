@@ -34,7 +34,7 @@ export class ProductSizeService {
       let product=await queryRunner.manager.findOneBy(ProductEnitiy,{id:productId})
     
       if (!product) throw new NotFoundException("product not found!")
-        if(product.type === TypeProduct.Singel) throw new BadRequestException("product type of singel!")
+        if(product.type !== TypeProduct.Sizing) throw new BadRequestException("product type is not  sizeing!")
         
       await queryRunner.manager.insert(ProductSizeEnitiy,{
         size,

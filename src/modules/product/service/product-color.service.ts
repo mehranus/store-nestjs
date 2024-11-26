@@ -34,8 +34,7 @@ export class ProductcolorService {
       let product=await queryRunner.manager.findOneBy(ProductEnitiy,{id:productId})
     
       if (!product) throw new NotFoundException("product not found!")
-        if(product.type === TypeProduct.Singel) throw new BadRequestException("product type of singel!")
-        if(product.type === TypeProduct.Sizing) throw new BadRequestException("product type of sizing!")
+        if(product.type !== TypeProduct.Coloring) throw new BadRequestException("product type is not  coloring!")
         
       await queryRunner.manager.insert(ProductColorEnitiy,{
         active_discount:toBoolean(active_discount),
