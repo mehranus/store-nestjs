@@ -11,6 +11,7 @@ import { ProductSizeEnitiy } from "./entitis/product-size.entity";
 import { ProductColorController } from "./controllers/product-color.controller";
 import { ProductDitelService } from "./service/product-ditels.service";
 import { ProductSizeService } from "./service/product-size.service";
+import { ProductcolorService } from "./service/product-color.service";
 
 @Module({
   imports: [
@@ -27,6 +28,6 @@ import { ProductSizeService } from "./service/product-size.service";
     ProductColorController,
     ProductDetilsController,
   ],
-  providers: [ProductService,ProductDitelService,ProductSizeService],
+  providers: [ProductService,ProductDitelService,ProductSizeService,ProductcolorService],
 })
 export class ProductModule {}
