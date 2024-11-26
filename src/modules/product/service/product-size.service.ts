@@ -72,10 +72,16 @@ export class ProductSizeService {
        if(discount) size.discount=discount;
        if(price) size.price=price;
        if(active_discount) size.active_discount=toBoolean(active_discount);
+
+       const perviuseCount=size.count
+
       if(count > 0){
+        product.count=product.count-perviuseCount
         product.count=count + product.count
+        size.count=count
+        await queryRunner.manager.save(ProductEnitiy,product)
       }
-      await queryRunner.manager.save(ProductEnitiy,product)
+      await queryRunner.manager.save(ProductSizeEnitiy,size)
 
       await queryRunner.commitTransaction()
       await queryRunner.release()
