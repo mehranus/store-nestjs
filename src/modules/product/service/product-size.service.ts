@@ -46,11 +46,10 @@ export class ProductSizeService {
       })
     
       if(!isNaN(parseInt(count.toString())) && +count > 0){
-        console.log(product.count)
         product.count=parseInt(count.toString()) + parseInt(product.count.toString())
         await queryRunner.manager.save(ProductEnitiy,product)
       }
-      console.log(product)
+
       await queryRunner.commitTransaction()
       await queryRunner.release()
       return{
@@ -123,10 +122,30 @@ export class ProductSizeService {
 
 
   async delete(id: number) {
-    await this.findOne(id);
-    await this.productSizeRepository.delete(id);
-    return {
-      message: "deleted  of product-size sucsesfully",
-    };
+    const queryRunner=this.dataSorece.createQueryRunner()
+    await queryRunner.connect()
+    try {
+      await queryRunner.startTransaction()
+
+      const size=await queryRunner.manager.findOneBy(ProductSizeEnitiy,{id})
+      if(!size) throw new NotFoundException("Size Product NotFound!")
+      const product=await queryRunner.manager.findOneBy(ProductEnitiy,{id:size.productId})
+      if(!isNaN(parseInt(size.count.toString())) && +size.count > 0){
+        product.count=parseInt(product.count.toString()) - parseInt(size.count.toString())
+        await queryRunner.manager.save(ProductEnitiy,product)
+      }
+      await queryRunner.manager.remove(size)
+      await queryRunner.commitTransaction()
+      await queryRunner.release()
+      return {
+        message: "deleted  of product-size sucsesfully",
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction()
+      await queryRunner.release()
+      throw err
+      
+    }
+
   }
 }
