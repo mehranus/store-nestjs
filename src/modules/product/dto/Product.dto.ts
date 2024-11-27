@@ -37,7 +37,7 @@ export class CreateColorDto{
   productId:number
   @ApiProperty()
   count:number
-  @ApiPropertyOptional({format:'decimal'})
+  @ApiProperty({format:'decimal'})
   price:number
   @ApiPropertyOptional({format:'decimal',default:0})
   discount:number
@@ -58,7 +58,7 @@ export class CreateSizeDto{
   productId:number
   @ApiProperty()
   count:number
-  @ApiPropertyOptional({format:'decimal'})
+  @ApiProperty({format:'decimal'})
   price:number
   @ApiPropertyOptional({format:'decimal',default:0})
   discount:number
