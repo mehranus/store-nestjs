@@ -15,7 +15,7 @@ export class DiscountEntity{
   @Column({type:'decimal' , nullable:true})
   amount:number;
 
-  @Column({nullable:true})
+  @Column({type:'timestamp',nullable:true})
   expierIn:Date
 
   @Column({nullable:true})

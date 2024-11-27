@@ -29,5 +29,6 @@ import { ProductcolorService } from "./service/product-color.service";
     ProductDetilsController,
   ],
   providers: [ProductService,ProductDitelService,ProductSizeService,ProductcolorService],
+  exports: [ProductService,ProductDitelService,ProductSizeService,ProductcolorService],
 })
 export class ProductModule {}
