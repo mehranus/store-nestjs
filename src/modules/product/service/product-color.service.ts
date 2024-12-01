@@ -115,11 +115,11 @@ export class ProductcolorService {
   }
 
   async findOne(id: number) {
-    const product = await this.productColorRepository.findOne({
+    const color = await this.productColorRepository.findOne({
       where: { id },
     });
-    if (!product) throw new NotFoundException();
-    return product;
+    if (!color) throw new NotFoundException();
+    return color;
   }
 
 

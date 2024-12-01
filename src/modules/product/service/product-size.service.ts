@@ -113,11 +113,11 @@ export class ProductSizeService {
   }
 
   async findOne(id: number) {
-    const product = await this.productSizeRepository.findOne({
+    const size = await this.productSizeRepository.findOne({
       where: { id },
     });
-    if (!product) throw new NotFoundException();
-    return product;
+    if (!size) throw new NotFoundException();
+    return size;
   }
 
 

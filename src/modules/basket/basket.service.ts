@@ -1,4 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BasketEntity } from './entitis/basket.entity';
+import { FindOptionsWhere, Repository } from 'typeorm';
+import { ProductService } from '../product/service/product.service';
+import { ProductcolorService } from '../product/service/product-color.service';
+import { ProductSizeService } from '../product/service/product-size.service';
+import { BasketDto } from './dto/basket.dto';
+import { TypeProduct } from '../product/enum/product.enum';
+import { ProductSizeEnitiy } from '../product/entitis/product-size.entity';
+import { ProductColorEnitiy } from '../product/entitis/product-color.entity';
 
 @Injectable()
-export class BasketService {}
+export class BasketService {
+  constructor(
+    @InjectRepository(BasketEntity) private readonly baketRepository:Repository<BasketEntity>,
+    private readonly productServis:ProductService,
+    private readonly productColorServis:ProductcolorService,
+    private readonly productSizeServis:ProductSizeService,
+  ){}
+
+ async addToBasket(basketDto:BasketDto){
+
+    const {colorId,productId,sizeId}=basketDto
+    let size:ProductSizeEnitiy
+    let color:ProductColorEnitiy
+    let where:FindOptionsWhere<BasketEntity>={}
+    const product=await this.productServis.findOneLaet(productId)
+    where['productId']=product.id
+
+    if(product.type === TypeProduct.Sizing && !sizeId){throw new BadRequestException("you sholud select a size")}
+    else if(product.type === TypeProduct.Coloring && sizeId){
+      if(isNaN(parseInt(sizeId.toString()))){
+        throw new BadRequestException("you sholud select a size")
+      }
+      size=await this.productSizeServis.findOne(sizeId)
+      where['sizeId']=size.id
+    }else if(product.type === TypeProduct.Coloring && !colorId){ throw new BadRequestException("you sholud select some color")}
+    else if(product.type === TypeProduct.Coloring && colorId){
+      if(isNaN(parseInt(colorId.toString()))){
+        throw new BadRequestException("you sholud select a size")
+      }
+      color = await this.productColorServis.findOne(colorId)
+      where['colorId']=color.id
+    }
+    const basketItem=await this.baketRepository.findOneBy(where)
+
+
+  }
+}
