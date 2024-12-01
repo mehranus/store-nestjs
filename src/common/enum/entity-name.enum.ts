@@ -3,5 +3,6 @@ export enum EntityName{
   ProductDitels='product-ditels',
   ProductColor='product-color',
   ProductSize='product-size',
-  Discount='discount'
+  Discount='discount',
+  Basket='basket'
 }

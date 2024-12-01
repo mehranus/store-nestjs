@@ -1,6 +1,7 @@
 import { EntityName } from "src/common/enum/entity-name.enum";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductEnitiy } from "./product.entity";
+import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
 
 
 @Entity(EntityName.ProductColor)
@@ -23,6 +24,9 @@ export class ProductColorEnitiy{
   productId:number
   @ManyToOne(()=>ProductEnitiy,product=>product.color,{onDelete:'CASCADE'})
   product:ProductEnitiy
+
+  @OneToMany(()=>BasketEntity,basket=>basket.color)
+  basket:BasketEntity[]
   
 
 

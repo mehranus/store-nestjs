@@ -4,6 +4,7 @@ import { ProductColorEnitiy } from "./product-color.entity";
 import { ProductDitelsEnitiy } from "./product-ditels.entity";
 import { ProductSizeEnitiy } from "./product-size.entity";
 import { TypeProduct } from "../enum/product.enum";
+import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
 
 
 @Entity(EntityName.Product)
@@ -35,6 +36,8 @@ export class ProductEnitiy{
     ditels:ProductDitelsEnitiy[]
     @OneToMany(()=>ProductSizeEnitiy,size=>size.product)
     size:ProductSizeEnitiy[]
+    @OneToMany(()=>BasketEntity,basket=>basket.product)
+    basket:BasketEntity[]
 
   @CreateDateColumn()
   created_at:Date

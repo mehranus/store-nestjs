@@ -1,6 +1,7 @@
 import { EntityName } from "src/common/enum/entity-name.enum";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductEnitiy } from "./product.entity";
+import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
 
 
 @Entity(EntityName.ProductSize)
@@ -21,6 +22,9 @@ export class ProductSizeEnitiy{
   productId:number
   @ManyToOne(()=>ProductEnitiy,product=>product.size,{onDelete:'CASCADE'})
   product:ProductEnitiy
+
+  @OneToMany(()=>BasketEntity,basket=>basket.size)
+  basket:BasketEntity[]
   
 
 
