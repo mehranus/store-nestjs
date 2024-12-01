@@ -28,22 +28,23 @@ export class BasketService {
     const product=await this.productServis.findOneLaet(productId)
     if(product.count == 0) throw new BadRequestException("product invertoy not enough")
     where['productId']=product.id
-
     if(product.type === TypeProduct.Sizing && !sizeId){throw new BadRequestException("you sholud select a size")}
-    else if(product.type === TypeProduct.Coloring && sizeId){
+    else if(product.type === TypeProduct.Sizing && sizeId){
+     
       if(isNaN(parseInt(sizeId.toString()))){
         throw new BadRequestException("you sholud select a size")
       }
       size=await this.productSizeServis.findOne(sizeId)
-      where['sizeId']=size.id
+      where['sizeId']=sizeId
     }else if(product.type === TypeProduct.Coloring && !colorId){ throw new BadRequestException("you sholud select some color")}
     else if(product.type === TypeProduct.Coloring && colorId){
       if(isNaN(parseInt(colorId.toString()))){
         throw new BadRequestException("you sholud select a size")
       }
       color = await this.productColorServis.findOne(colorId)
-      where['colorId']=color.id
+      where['colorId']=colorId
     }
+
     let basketItem=await this.baketRepository.findOneBy(where)
     if(basketItem){
       basketItem.count+=1
@@ -63,6 +64,66 @@ export class BasketService {
 
 
   }
+ async removeFromBasketById(id:number){
+
+    let basketItem=await this.baketRepository.findOneBy({id})
+    if(basketItem){
+      if(basketItem.count <= 1){
+        await this.baketRepository.delete({id:basketItem.id})
+      }else{
+        basketItem.count-=1
+        await this.baketRepository.save(basketItem)
+      }
+     
+        return{
+          message:"remove product from basket sucesfully"
+        }
 
 
+  }
+
+
+}
+ async removeFromBasket(basketDto:BasketDto){
+
+    const {colorId,productId,sizeId}=basketDto
+    let size:ProductSizeEnitiy
+    let color:ProductColorEnitiy
+    let where:FindOptionsWhere<BasketEntity>={}
+    const product=await this.productServis.findOneLaet(productId)
+    where['productId']=product.id
+
+    if(product.type === TypeProduct.Sizing && !sizeId){throw new BadRequestException("you sholud select a size")}
+    else if(product.type === TypeProduct.Coloring && sizeId){
+      if(isNaN(parseInt(sizeId.toString()))){
+        throw new BadRequestException("you sholud select a size")
+      }
+      size=await this.productSizeServis.findOne(sizeId)
+      where['sizeId']=size.id
+    }else if(product.type === TypeProduct.Coloring && !colorId){ throw new BadRequestException("you sholud select some color")}
+    else if(product.type === TypeProduct.Coloring && colorId){
+      if(isNaN(parseInt(colorId.toString()))){
+        throw new BadRequestException("you sholud select a size")
+      }
+      color = await this.productColorServis.findOne(colorId)
+      where['colorId']=color.id
+    }
+    let basketItem=await this.baketRepository.findOneBy(where)
+    if(basketItem){
+      if(basketItem.count <= 1){
+        await this.baketRepository.delete({id:basketItem.id})
+      }else{
+        basketItem.count-=1
+        await this.baketRepository.save(basketItem)
+      }
+     
+        return{
+          message:"remove product from basket sucesfully"
+        }
+
+
+  }
+
+
+}
 }
