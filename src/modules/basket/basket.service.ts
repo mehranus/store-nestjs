@@ -26,6 +26,7 @@ export class BasketService {
     let color:ProductColorEnitiy
     let where:FindOptionsWhere<BasketEntity>={}
     const product=await this.productServis.findOneLaet(productId)
+    if(product.count == 0) throw new BadRequestException("product invertoy not enough")
     where['productId']=product.id
 
     if(product.type === TypeProduct.Sizing && !sizeId){throw new BadRequestException("you sholud select a size")}
@@ -43,8 +44,25 @@ export class BasketService {
       color = await this.productColorServis.findOne(colorId)
       where['colorId']=color.id
     }
-    const basketItem=await this.baketRepository.findOneBy(where)
+    let basketItem=await this.baketRepository.findOneBy(where)
+    if(basketItem){
+      basketItem.count+=1
+      if(basketItem.count > product.count) throw new BadRequestException("product invertoy not enough")
+    }else{
+          basketItem=this.baketRepository.create({
+            productId,
+            colorId:color?.id,
+            sizeId:size?.id,
+            count:1
+          })
+        }
+        await this.baketRepository.save(basketItem)
+        return{
+          message:"add product sucesfully"
+        }
 
 
   }
+
+
 }
