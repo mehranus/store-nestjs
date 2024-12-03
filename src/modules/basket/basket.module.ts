@@ -4,9 +4,10 @@ import { BasketController } from './basket.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BasketEntity } from './entitis/basket.entity';
 import { ProductModule } from '../product/product.module';
+import { DiscountModule } from '../discount/discount.module';
 
 @Module({
-  imports:[ProductModule,TypeOrmModule.forFeature([BasketEntity])],
+  imports:[DiscountModule,ProductModule,TypeOrmModule.forFeature([BasketEntity])],
   controllers: [BasketController],
   providers: [BasketService],
 })

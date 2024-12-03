@@ -3,6 +3,7 @@ import { BasketService } from './basket.service';
 import { BasketDto } from './dto/basket.dto';
 import { ApiConsumes } from '@nestjs/swagger';
 import { TypeData } from 'src/common/enum/type-data.enum';
+import { DiscountBasketDto } from './dto/discount.dto';
 
 @Controller('basket')
 export class BasketController {
@@ -18,7 +19,9 @@ export class BasketController {
   }
   @Post('add-discount')
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
-  addDiscountToBasket(){}
+  addDiscountToBasket(@Body() discountDto:DiscountBasketDto){
+    return this.basketService.addDiscountBasket(discountDto)
+  }
 
   @Delete('remove')
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)

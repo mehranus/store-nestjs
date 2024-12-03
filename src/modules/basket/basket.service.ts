@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BasketEntity } from './entitis/basket.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -9,6 +9,9 @@ import { BasketDto } from './dto/basket.dto';
 import { TypeProduct } from '../product/enum/product.enum';
 import { ProductSizeEnitiy } from '../product/entitis/product-size.entity';
 import { ProductColorEnitiy } from '../product/entitis/product-color.entity';
+import { DiscountBasketDto } from './dto/discount.dto';
+import { DiscountService } from '../discount/discount.service';
+import { DiscountType } from '../discount/enum/discount.enum';
 
 @Injectable()
 export class BasketService {
@@ -17,6 +20,7 @@ export class BasketService {
     private readonly productServis:ProductService,
     private readonly productColorServis:ProductcolorService,
     private readonly productSizeServis:ProductSizeService,
+    private readonly discountServis:DiscountService,
   ){}
 
  async addToBasket(basketDto:BasketDto){
@@ -126,4 +130,42 @@ export class BasketService {
 
 
 }
+async addDiscountBasket(discountDto:DiscountBasketDto){
+  const {code}=discountDto
+  const discont = await this.discountServis.getCodeDiscount(code)
+
+  if(!discont) throw new NotFoundException('not found discount')
+  if(discont.type === DiscountType.Product && discont.productId){
+    const basketItem=await this.baketRepository.findOneBy({
+      productId:discont.productId
+    })
+   
+    if(!basketItem) throw new BadRequestException('not found item for discount code')
+  }
+    if(discont.limit && (discont.limit >= 0 || discont.usage > discont.limit)) throw new BadRequestException("discount code is limited")
+    if(discont.expierIn && discont.expierIn <= new Date()) throw new BadRequestException(" discount code is expiered")
+    const existDiscount=await this.baketRepository.findOneBy({
+      discountId:discont.id
+        }) 
+    if(existDiscount) throw new BadRequestException("alredy code discount exist")  
+    if(discont.type === DiscountType.Basket){
+      const item =await this.baketRepository.findOne({
+        relations:{discount:true},
+        where:{discount:{type:DiscountType.Basket}}
+      })
+      if(item)throw new BadRequestException("alredy code discount exist") 
+      } 
+      await this.baketRepository.insert({
+        productId:discont?.productId,
+        discountId:discont.id,
+        count:0
+      })  
+      return {
+        message:"add discount sucesfully"
+      }
+
+   
+}
+
+
 }
