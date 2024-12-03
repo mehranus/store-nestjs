@@ -23,6 +23,117 @@ export class BasketService {
     private readonly discountServis:DiscountService,
   ){}
 
+  async getBasket(){
+    let Products=[]
+    let Discount=[]
+ 
+
+    let fainalAmont=0
+    let totoalDiscountAmount=0
+
+    const items=await this.baketRepository.find({
+      where:{},
+      relations:{
+        product:true,
+        color:true,
+        size:true,
+        discount:true
+      }
+      
+    })
+
+    for (const item of items) {
+      const {color,discount,size,product,count}=item
+      let discountAmount=0
+      if(product?.type == TypeProduct.Singel){
+        if(product?.active_discount){
+          discountAmount+= product.price * (product?.discount / 100)
+          totoalDiscountAmount += discountAmount
+        }
+        fainalAmont += (product.price - discountAmount)*count
+        Products.push({
+          id:product.id,
+          slug:product.slug,
+          titel:product.titel,
+          price:product.price,
+          active_discount:product.active_discount,
+          discount:product.discount,
+          count
+        })
+      }else if(product?.type == TypeProduct.Sizing){
+        if(size?.active_discount){
+          discountAmount+= size.price * (size?.discount / 100)
+          totoalDiscountAmount += discountAmount
+        }
+        fainalAmont += (size.price - discountAmount)*count
+        Products.push({
+          id:product.id,
+          slug:product.slug,
+          titel:product.titel,
+          price:size.price,
+          active_discount:size.active_discount,
+          discount:size.discount,
+          size:size.size,
+          count
+        })
+      }else if(product?.type == TypeProduct.Coloring){
+        if(color?.active_discount){
+          discountAmount+= color.price * (color?.discount / 100)
+          totoalDiscountAmount += discountAmount
+        }
+        fainalAmont += (color.price - discountAmount)*count
+        Products.push({
+          id:product.id,
+          slug:product.slug,
+          titel:product.titel,
+          price:color.price,
+          active_discount:color.active_discount,
+          discount:color.discount,
+          color_name:color.color_name,
+          color_code:color.color_code,
+          count
+        })
+      }
+      if(discount){
+        let LimitCondition=discount.limit && discount.limit > discount.usage
+        let TimeCondition=discount.expierIn && discount.expierIn > new Date()
+        if(LimitCondition || TimeCondition){
+          Discount.push({
+            persent:discount.percent,
+            amount:discount.amount,
+            productId:discount.productId,
+            type:discount.type,
+            code:discount.code
+          })
+          if(discount.productId){
+            const exist= items.some(i=>!i.discountId  && i.productId === discount.productId)
+            if(exist) continue;
+            
+          }else{
+            if(discount.percent){
+              discountAmount = fainalAmont *(discount.percent / 100)
+              fainalAmont = discountAmount > fainalAmont ? 0 : fainalAmont - discountAmount
+
+            }else if(discount.amount){
+              discountAmount = +discount.amount
+              fainalAmont = discountAmount > fainalAmont ? 0 : fainalAmont - discountAmount
+            }
+            totoalDiscountAmount += discountAmount
+          }
+        }
+      }
+    }
+
+
+    return {
+      fainalAmont,
+      totoalDiscountAmount,
+      totoalAmount:fainalAmont-totoalDiscountAmount,
+      Products,
+      Discount,
+    }
+  }
+
  async addToBasket(basketDto:BasketDto){
 
     const {colorId,productId,sizeId}=basketDto

@@ -10,7 +10,9 @@ export class BasketController {
   constructor(private readonly basketService: BasketService) {}
 
   @Get()
-  Basket(){}
+  Basket(){
+    return this.basketService.getBasket()
+  }
 
   @Post('add')
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
