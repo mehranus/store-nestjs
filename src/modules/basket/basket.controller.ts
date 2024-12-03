@@ -33,5 +33,6 @@ export class BasketController {
     return this.basketService.removeFromBasketById(id)
   }
   @Delete('remove-discont')
-  removeDiscountFromBasket(){}
+  removeDiscountFromBasket(@Body() discountDto:DiscountBasketDto){
+    return this.basketService.removeDiscountBasket(discountDto)}
 }

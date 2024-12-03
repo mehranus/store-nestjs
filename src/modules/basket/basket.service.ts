@@ -153,6 +153,7 @@ async addDiscountBasket(discountDto:DiscountBasketDto){
         relations:{discount:true},
         where:{discount:{type:DiscountType.Basket}}
       })
+      console.log(item)
       if(item)throw new BadRequestException("alredy code discount exist") 
       } 
       await this.baketRepository.insert({
@@ -162,6 +163,26 @@ async addDiscountBasket(discountDto:DiscountBasketDto){
       })  
       return {
         message:"add discount sucesfully"
+      }
+
+   
+}
+async removeDiscountBasket(discountDto:DiscountBasketDto){
+  const {code}=discountDto
+  const discont = await this.discountServis.getCodeDiscount(code)
+
+  if(!discont) throw new NotFoundException('not found discount')
+      const existDiscount=await this.baketRepository.findOneBy({
+      discountId:discont.id
+        }) 
+    if(existDiscount) {
+      await this.baketRepository.delete({id:existDiscount.id})
+    }else{
+      throw new NotFoundException('not found discount')
+    }  
+    
+      return {
+        message:"remove discount from basket sucesfully"
       }
 
    
