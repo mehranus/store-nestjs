@@ -12,6 +12,7 @@ import { ProductColorEnitiy } from '../product/entitis/product-color.entity';
 import { DiscountBasketDto } from './dto/discount.dto';
 import { DiscountService } from '../discount/discount.service';
 import { DiscountType } from '../discount/enum/discount.enum';
+import { DiscountEntity } from '../discount/entities/discount.entity';
 
 @Injectable()
 export class BasketService {
@@ -24,11 +25,12 @@ export class BasketService {
   ){}
 
   async getBasket(){
-    let Products=[]
-    let Discount=[]
+    let products=[]
+    let discounts=[]
  
 
     let fainalAmont=0
+    let totoalPrice=0
     let totoalDiscountAmount=0
 
     const items=await this.baketRepository.find({
@@ -41,98 +43,206 @@ export class BasketService {
       }
       
     })
-
+   const productDiscounts= items.filter(itm=>itm?.discountId && itm?.discount?.type === DiscountType.Product)
     for (const item of items) {
       const {color,discount,size,product,count}=item
       let discountAmount=0
       if(product?.type == TypeProduct.Singel){
+        totoalPrice+= +product.price
         if(product?.active_discount){
-          discountAmount+= product.price * (product?.discount / 100)
+          const {newDiscountAmount,newPrice}=this.checkDiscountPercent(
+            +product.price,+product.discount
+          )
+          discountAmount+= newDiscountAmount
+          product.price=newPrice
           totoalDiscountAmount += discountAmount
         }
-        fainalAmont += (product.price - discountAmount)*count
-        Products.push({
-          id:product.id,
-          slug:product.slug,
-          titel:product.titel,
-          price:product.price,
-          active_discount:product.active_discount,
-          discount:product.discount,
-          count
-        })
-      }else if(product?.type == TypeProduct.Sizing){
-        if(size?.active_discount){
-          discountAmount+= size.price * (size?.discount / 100)
-          totoalDiscountAmount += discountAmount
-        }
-        fainalAmont += (size.price - discountAmount)*count
-        Products.push({
-          id:product.id,
-          slug:product.slug,
-          titel:product.titel,
-          price:size.price,
-          active_discount:size.active_discount,
-          discount:size.discount,
-          size:size.size,
-          count
-        })
-      }else if(product?.type == TypeProduct.Coloring){
-        if(color?.active_discount){
-          discountAmount+= color.price * (color?.discount / 100)
-          totoalDiscountAmount += discountAmount
-        }
-        fainalAmont += (color.price - discountAmount)*count
-        Products.push({
-          id:product.id,
-          slug:product.slug,
-          titel:product.titel,
-          price:color.price,
-          active_discount:color.active_discount,
-          discount:color.discount,
-          color_name:color.color_name,
-          color_code:color.color_code,
-          count
-        })
-      }
-      if(discount){
-        let LimitCondition=discount.limit && discount.limit > discount.usage
-        let TimeCondition=discount.expierIn && discount.expierIn > new Date()
-        if(LimitCondition || TimeCondition){
-          Discount.push({
-            persent:discount.percent,
-            amount:discount.amount,
-            productId:discount.productId,
-            type:discount.type,
-            code:discount.code
-          })
-          if(discount.productId){
-            const exist= items.some(i=>!i.discountId  && i.productId === discount.productId)
-            if(exist) continue;
-            
-          }else{
-            if(discount.percent){
-              discountAmount = fainalAmont *(discount.percent / 100)
-              fainalAmont = discountAmount > fainalAmont ? 0 : fainalAmont - discountAmount
 
-            }else if(discount.amount){
-              discountAmount = +discount.amount
-              fainalAmont = discountAmount > fainalAmont ? 0 : fainalAmont - discountAmount
-            }
-            totoalDiscountAmount += discountAmount
+        const existDiscount=productDiscounts.find(dis=>dis.productId === product.id)
+        if(existDiscount){
+          const {discount}=existDiscount
+          if(this.validateDiscount(discount)){
+        
+            discounts.push({
+              persent:discount.percent,
+              amount:discount.amount,
+              productId:discount.productId,
+              type:discount.type,
+              code:discount.code
+            })
+        
+          }
+        if(discount.percent){
+          const {newDiscountAmount,newPrice} =this.checkDiscountPercent(product.discount,discount.percent)
+          product.price=newPrice;
+          discountAmount=newDiscountAmount
+        }else if(discount.amount){
+          const {newDiscountAmount,newPrice}=this.checkDiscountAmount(product.price,discount.amount)
+          product.price=newPrice
+          discountAmount += newDiscountAmount
+        }
+        totoalDiscountAmount += discountAmount
+      }
+      
+      fainalAmont+= product.price *count
+     
+      products.push({
+        id: product.id,
+        slug: product.slug,
+        title: product.titel,
+        active_discount: product.active_discount,
+        discount: product.discount,
+        price: product.price,
+      });
+      } else if (product?.type === TypeProduct.Sizing) {
+      totoalPrice += +size.price;
+      if (size?.active_discount) {
+        const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
+          +size.price,
+          +size.discount
+        );
+        discountAmount = newDiscountAmount;
+        size.price = newPrice;
+      }
+      const existDiscount = productDiscounts.find(
+        (dis) => dis.productId === product.id
+      );
+      if (existDiscount) {
+        const {discount} = existDiscount;
+        if (this.validateDiscount(discount)) {
+          discounts.push({
+            percent: discount.percent,
+            amount: discount.amount,
+            code: discount.code,
+            type: discount.type,
+            productId: discount.productId,
+          });
+          if (discount.percent) {
+            const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
+              size.price,
+              discount.percent
+            );
+            size.price = newPrice;
+            discountAmount += newDiscountAmount;
+          } else if (discount.amount) {
+            const {newDiscountAmount, newPrice} = this.checkDiscountAmount(
+              size.price,
+              discount.amount
+            );
+            size.price = newPrice;
+            discountAmount += newDiscountAmount;
           }
         }
       }
+      totoalDiscountAmount += discountAmount;
+      fainalAmont += +size.price * count;
+      products.push({
+        id: product.id,
+        slug: product.slug,
+        title: product.titel,
+        active_discount: size.active_discount,
+        discount: size.discount,
+        sizeId: size.id,
+        price: size.price,
+        size: size.size,
+      });
+    } else if (product?.type === TypeProduct.Coloring) {
+      totoalPrice += +color.price;
+      if (color?.active_discount) {
+        const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
+          +color.price,
+          +color.discount
+        );
+        discountAmount = newDiscountAmount;
+        color.price = newPrice;
+      }
+      const existDiscount = productDiscounts.find(
+        (dis) => dis.productId === product.id
+      );
+      if (existDiscount) {
+        const {discount} = existDiscount;
+        if (this.validateDiscount(discount)) {
+          discounts.push({
+            percent: discount.percent,
+            amount: discount.amount,
+            code: discount.code,
+            type: discount.type,
+            productId: discount.productId,
+          });
+          if (discount.percent) {
+            const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
+              color.price,
+              discount.percent
+            );
+            color.price = newPrice;
+            discountAmount += newDiscountAmount;
+          } else if (discount.amount) {
+            const {newDiscountAmount, newPrice} = this.checkDiscountAmount(
+              color.price,
+              discount.amount
+            );
+            color.price = newPrice;
+            discountAmount += newDiscountAmount;
+          }
+        }
+      }
+      totoalDiscountAmount += discountAmount;
+      fainalAmont += +color.price * count;
+      products.push({
+        id: product.id,
+        slug: product.slug,
+        title: product.titel,
+        active_discount: color.active_discount,
+        discount: color.discount,
+        price: color.price,
+        colorId: color.id,
+        color_code: color.color_code,
+        color_name: color.color_name,
+      });
+    } else if (discount) {
+      if (this.validateDiscount(discount)) {
+        if (discount.type === DiscountType.Basket) {
+          discounts.push({
+            percent: discount.percent,
+            amount: discount.amount,
+            code: discount.code,
+            type: discount.type,
+            productId: discount.productId,
+          });
+          if (discount.percent) {
+            const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
+              fainalAmont,
+              discount.percent
+            );
+            fainalAmont = newPrice;
+            discountAmount = +newDiscountAmount;
+          } else if (discount.amount) {
+            const {newDiscountAmount, newPrice} = this.checkDiscountAmount(
+              fainalAmont,
+              discount.amount
+            );
+            fainalAmont = newPrice;
+            discountAmount = newDiscountAmount;
+          }
+          totoalDiscountAmount += discountAmount;
+        }
+      }
     }
-
-
-    return {
-      fainalAmont,
-      totoalDiscountAmount,
-      totoalAmount:fainalAmont-totoalDiscountAmount,
-      Products,
-      Discount,
     }
+  return {
+    totoalPrice,
+    fainalAmont,
+    totoalDiscountAmount,
+    productDiscounts,
+    products,
+    discounts,
+  };
+
+    
+
+   
   }
+
 
  async addToBasket(basketDto:BasketDto){
 
@@ -298,6 +408,28 @@ async removeDiscountBasket(discountDto:DiscountBasketDto){
 
    
 }
+
+validateDiscount(discount: DiscountEntity) {
+  let limitCondition = discount.limit && discount.limit > discount.usage;
+  let timeCondition = discount.expierIn && discount.expierIn > new Date();
+  return limitCondition || timeCondition;
+}
+checkDiscountPercent(price: number, percent: number) {
+  let newDiscountAmount = +price * (+percent / 100);
+  let newPrice = +newDiscountAmount > +price ? 0 : +price - newDiscountAmount;
+  return {
+    newPrice,
+    newDiscountAmount,
+  };
+}
+checkDiscountAmount(price: number, amount: number) {
+  let newPrice = +amount > +price ? 0 : +price - +amount;
+  return {
+    newPrice,
+    newDiscountAmount: +amount,
+  };
+}
+
 
 
 }
