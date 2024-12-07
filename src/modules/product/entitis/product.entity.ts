@@ -5,6 +5,7 @@ import { ProductDitelsEnitiy } from "./product-ditels.entity";
 import { ProductSizeEnitiy } from "./product-size.entity";
 import { TypeProduct } from "../enum/product.enum";
 import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
+import { OredrItemEntity } from "src/modules/order/entitis/order-item.entity";
 
 
 @Entity(EntityName.Product)
@@ -38,6 +39,8 @@ export class ProductEnitiy{
     size:ProductSizeEnitiy[]
     @OneToMany(()=>BasketEntity,basket=>basket.product)
     basket:BasketEntity[]
+    @OneToMany(()=>OredrItemEntity,item=>item.product)
+    orders:OredrItemEntity[]
 
   @CreateDateColumn()
   created_at:Date

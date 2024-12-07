@@ -2,6 +2,7 @@ import { EntityName } from "src/common/enum/entity-name.enum";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductEnitiy } from "./product.entity";
 import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
+import { OredrItemEntity } from "src/modules/order/entitis/order-item.entity";
 
 
 @Entity(EntityName.ProductSize)
@@ -25,6 +26,8 @@ export class ProductSizeEnitiy{
 
   @OneToMany(()=>BasketEntity,basket=>basket.size)
   basket:BasketEntity[]
+  @OneToMany(()=>OredrItemEntity,item=>item.size)
+  orders:OredrItemEntity[]
   
 
 

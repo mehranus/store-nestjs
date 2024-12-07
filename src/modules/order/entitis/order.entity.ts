@@ -1,6 +1,7 @@
 import { EntityName } from "src/common/enum/entity-name.enum";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { OrderStatus } from "../enum/order.enum";
+import { OredrItemEntity } from "./order-item.entity";
 
 @Entity(EntityName.Order)
 export class OrderEntity{
@@ -21,6 +22,9 @@ export class OrderEntity{
 
   @CreateDateColumn()
   created_at:Date
+
+        @OneToMany(()=>OredrItemEntity,item=>item.order,{onDelete:'CASCADE'})
+        item:OredrItemEntity[]
 
 
 }
