@@ -7,4 +7,5 @@ export enum EntityName{
   Basket='basket',
   Order='order',
   OrderItem='order-item',
+  Payment='payment',
 }
