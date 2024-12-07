@@ -4,5 +4,7 @@ export enum EntityName{
   ProductColor='product-color',
   ProductSize='product-size',
   Discount='discount',
-  Basket='basket'
+  Basket='basket',
+  Order='order',
+  OrderItem='order-item',
 }
