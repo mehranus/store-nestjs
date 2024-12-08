@@ -8,9 +8,11 @@ import { ProductModule } from '../product/product.module';
 import { DiscountModule } from '../discount/discount.module';
 import { BasketEntity } from '../basket/entitis/basket.entity';
 import { HttpApiModules } from '../http/http.module';
+import { OredrItemEntity } from '../order/entitis/order-item.entity';
+import { OrderEntity } from '../order/entitis/order.entity';
 
 @Module({
-  imports:[DiscountModule,ProductModule,HttpApiModules,TypeOrmModule.forFeature([PaymentEntity,BasketEntity])],
+  imports:[DiscountModule,ProductModule,HttpApiModules,TypeOrmModule.forFeature([PaymentEntity,BasketEntity,OredrItemEntity,OrderEntity])],
   controllers: [PaymentController],
   providers: [PaymentService,BasketService],
 })

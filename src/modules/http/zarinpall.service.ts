@@ -17,7 +17,7 @@ export class ZarinPallService{
       description,
       metadata:{
         email:email ?? "exampel.gmail.com",
-        mobail:phone ?? "091- --- -- --",
+        mobile:phone ?? "091- --- -- --",
       },
       callback_url:`${process.env.URL}payment/verify`
     

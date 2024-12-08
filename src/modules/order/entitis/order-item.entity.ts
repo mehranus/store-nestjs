@@ -13,10 +13,12 @@ export class OredrItemEntity{
   orderId:number
   @Column()
   productId:number;
-  @Column()
+  @Column({nullable:true})
   sizeId:number
-  @Column()
+  @Column({nullable:true})
   colorId:number
+  @Column({default:0})
+  count:number
 
       @ManyToOne(()=>OrderEntity,order=>order.item)
       order:OrderEntity

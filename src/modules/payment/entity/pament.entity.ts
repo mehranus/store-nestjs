@@ -11,12 +11,13 @@ export class PaymentEntity{
   amount:number
   @Column()
   status:boolean
-  @Column()
+  @Column({unique:true})
   invoice_number:string
   @Column({nullable:true})
   refId:string
   @Column({nullable:true})
   authority:string
+  
   @Column()
   odrerId:number
   @CreateDateColumn()
