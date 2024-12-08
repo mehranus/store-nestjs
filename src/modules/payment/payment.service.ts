@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentEntity } from './entity/pament.entity';
 import { Repository } from 'typeorm';
@@ -69,5 +69,31 @@ export class PaymentService {
     return {gatewayURl}
   
   }
-  async find(){}
+  async verify(authority:string,status:string){
+    const payment =await this.paymentRepository.findOneBy({authority})
+    if(!payment) throw new NotFoundException("payment not found")
+    if(payment.status) throw new BadRequestException("already verifaid payment")
+    if(status == "OK"){
+      const order=await this.orderRepository.findOneBy({id:payment.odrerId})
+      if(!order) throw new NotFoundException("not found payement")
+        order.status=OrderStatus.Ordered
+      payment.status=true
+      await Promise.all([
+        this.orderRepository.save(order),
+        this.paymentRepository.save(payment)
+      ])
+
+      return 'http://frontend.ir/payment/sucess?order_on='+order.id
+    } else{
+      return 'http://frontend.ir/payment/failed'
+    } 
+  }
+
+  async find(){
+    return await this.paymentRepository.find({
+      order:{
+        created_at:'DESC'
+      }
+    })
+  }
 }
