@@ -24,224 +24,256 @@ export class BasketService {
     private readonly discountServis:DiscountService,
   ){}
 
-  async getBasket(){
-    let products=[]
-    let discounts=[]
- 
 
-    let fainalAmont=0
-    let totoalPrice=0
-    let totoalDiscountAmount=0
 
-    const items=await this.baketRepository.find({
-      where:{},
-      relations:{
-        product:true,
-        color:true,
-        size:true,
-        discount:true
-      }
-      
-    })
-   const productDiscounts= items.filter(itm=>itm?.discountId && itm?.discount?.type === DiscountType.Product)
-    for (const item of items) {
-      const {color,discount,size,product,count}=item
-      let discountAmount=0
-      if(product?.type == TypeProduct.Singel){
-        totoalPrice+= +product.price
-        if(product?.active_discount){
-          const {newDiscountAmount,newPrice}=this.checkDiscountPercent(
-            +product.price,+product.discount
-          )
-          discountAmount+= newDiscountAmount
-          product.price=newPrice
-          totoalDiscountAmount += discountAmount
+  async getBasket() {
+    let products: any[] = [];
+    let discounts: any[] = [];
+  
+    let finalAmount = 0;
+    let totalPrice = 0;
+    let totalDiscountAmount = 0;
+  
+    try {
+      const items = await this.baketRepository.find({
+        where: {},
+        relations: {
+          product: true,
+          color: true,
+          size: true,
+          discount: true
         }
-
-        const existDiscount=productDiscounts.find(dis=>dis.productId === product.id)
-        if(existDiscount){
-          const {discount}=existDiscount
-          if(this.validateDiscount(discount)){
-        
+      });
+  
+      // فیلتر کردن تخفیف‌های محصولی
+      const productDiscounts = items.filter(
+        itm => itm?.discountId && itm?.discount?.type === DiscountType.Product
+      );
+  
+      // ایجاد یک Map برای جستجوی سریع تخفیف‌ها بر اساس productId
+      const discountMap = new Map<number, DiscountEntity>();
+      productDiscounts.forEach(discountItem => {
+        discountMap.set(discountItem.productId, discountItem.discount);
+      });
+  
+      for (const item of items) {
+        const { color, discount, size, product, count } = item;
+        let discountAmount = 0;
+  
+        if (product?.type === TypeProduct.Singel) {
+          totalPrice += Number(product.price) || 0;
+  
+          // اعمال تخفیف فعال محصول
+          if (product?.active_discount) {
+            const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+              Number(product.price),
+              Number(product.discount)
+            );
+            discountAmount += newDiscountAmount;
+            product.price = newPrice;
+            totalDiscountAmount += discountAmount;
+          }
+  
+          // اعمال تخفیف‌های محصولی
+          const existDiscount = discountMap.get(product.id);
+          if (existDiscount && this.validateDiscount(existDiscount)) {
             discounts.push({
-              persent:discount.percent,
-              amount:discount.amount,
-              productId:discount.productId,
-              type:discount.type,
-              code:discount.code
-            })
-        
+              percent: existDiscount.percent,
+              amount: existDiscount.amount,
+              productId: existDiscount.productId,
+              type: existDiscount.type,
+              code: existDiscount.code,
+            });
+  
+            if (existDiscount.percent) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+                product.discount,
+                existDiscount.percent
+              );
+              product.price = newPrice;
+              discountAmount += newDiscountAmount;
+            } else if (existDiscount.amount) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountAmount(
+                product.price,
+                existDiscount.amount
+              );
+              product.price = newPrice;
+              discountAmount += newDiscountAmount;
+            }
+            totalDiscountAmount += discountAmount;
           }
-        if(discount.percent){
-          const {newDiscountAmount,newPrice} =this.checkDiscountPercent(product.discount,discount.percent)
-          product.price=newPrice;
-          discountAmount=newDiscountAmount
-        }else if(discount.amount){
-          const {newDiscountAmount,newPrice}=this.checkDiscountAmount(product.price,discount.amount)
-          product.price=newPrice
-          discountAmount += newDiscountAmount
-        }
-        totoalDiscountAmount += discountAmount
-      }
-      
-      fainalAmont+= product.price *count
-     
-      products.push({
-        id: product.id,
-        slug: product.slug,
-        title: product.titel,
-        active_discount: product.active_discount,
-        discount: product.discount,
-        price: product.price,
-      });
-      } else if (product?.type === TypeProduct.Sizing) {
-      totoalPrice += +size.price;
-      if (size?.active_discount) {
-        const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
-          +size.price,
-          +size.discount
-        );
-        discountAmount = newDiscountAmount;
-        size.price = newPrice;
-      }
-      const existDiscount = productDiscounts.find(
-        (dis) => dis.productId === product.id
-      );
-      if (existDiscount) {
-        const {discount} = existDiscount;
-        if (this.validateDiscount(discount)) {
-          discounts.push({
-            percent: discount.percent,
-            amount: discount.amount,
-            code: discount.code,
-            type: discount.type,
-            productId: discount.productId,
+  
+          finalAmount += product.price * (count || 0);
+  
+          products.push({
+            id: product.id,
+            slug: product.slug,
+            title: product.titel,
+            active_discount: product.active_discount,
+            discount: product.discount,
+            price: product.price,
+            count: count || 0
           });
-          if (discount.percent) {
-            const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
-              size.price,
-              discount.percent
+  
+        } else if (product?.type === TypeProduct.Sizing) {
+          // اعمال تخفیف برای محصولات با سایز
+          totalPrice += Number(size.price) || 0;
+  
+          if (size?.active_discount) {
+            const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+              Number(size.price),
+              Number(size.discount)
             );
+            discountAmount += newDiscountAmount;
             size.price = newPrice;
-            discountAmount += newDiscountAmount;
-          } else if (discount.amount) {
-            const {newDiscountAmount, newPrice} = this.checkDiscountAmount(
-              size.price,
-              discount.amount
-            );
-            size.price = newPrice;
-            discountAmount += newDiscountAmount;
+            totalDiscountAmount += discountAmount;
           }
-        }
-      }
-      totoalDiscountAmount += discountAmount;
-      fainalAmont += +size.price * count;
-      products.push({
-        id: product.id,
-        slug: product.slug,
-        title: product.titel,
-        active_discount: size.active_discount,
-        discount: size.discount,
-        sizeId: size.id,
-        price: size.price,
-        size: size.size,
-      });
-    } else if (product?.type === TypeProduct.Coloring) {
-      totoalPrice += +color.price;
-      if (color?.active_discount) {
-        const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
-          +color.price,
-          +color.discount
-        );
-        discountAmount = newDiscountAmount;
-        color.price = newPrice;
-      }
-      const existDiscount = productDiscounts.find(
-        (dis) => dis.productId === product.id
-      );
-      if (existDiscount) {
-        const {discount} = existDiscount;
-        if (this.validateDiscount(discount)) {
-          discounts.push({
-            percent: discount.percent,
-            amount: discount.amount,
-            code: discount.code,
-            type: discount.type,
-            productId: discount.productId,
+  
+          const existDiscount = discountMap.get(product.id);
+          if (existDiscount && this.validateDiscount(existDiscount)) {
+            discounts.push({
+              percent: existDiscount.percent,
+              amount: existDiscount.amount,
+              code: existDiscount.code,
+              type: existDiscount.type,
+              productId: existDiscount.productId,
+            });
+  
+            if (existDiscount.percent) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+                size.price,
+                existDiscount.percent
+              );
+              size.price = newPrice;
+              discountAmount += newDiscountAmount;
+            } else if (existDiscount.amount) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountAmount(
+                size.price,
+                existDiscount.amount
+              );
+              size.price = newPrice;
+              discountAmount += newDiscountAmount;
+            }
+            totalDiscountAmount += discountAmount;
+          }
+  
+          finalAmount += Number(size.price) * (count || 0);
+          products.push({
+            id: product.id,
+            slug: product.slug,
+            title: product.titel,
+            active_discount: size.active_discount,
+            discount: size.discount,
+            sizeId: size.id,
+            price: size.price,
+            size: size.size,
+            count: count || 0
           });
-          if (discount.percent) {
-            const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
-              color.price,
-              discount.percent
+  
+        } else if (product?.type === TypeProduct.Coloring) {
+          // اعمال تخفیف برای محصولات با رنگ
+          totalPrice += Number(color.price) || 0;
+  
+          if (color?.active_discount) {
+            const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+              Number(color.price),
+              Number(color.discount)
             );
-            color.price = newPrice;
             discountAmount += newDiscountAmount;
-          } else if (discount.amount) {
-            const {newDiscountAmount, newPrice} = this.checkDiscountAmount(
-              color.price,
-              discount.amount
-            );
             color.price = newPrice;
-            discountAmount += newDiscountAmount;
+            totalDiscountAmount += discountAmount;
           }
-        }
-      }
-      totoalDiscountAmount += discountAmount;
-      fainalAmont += +color.price * count;
-      products.push({
-        id: product.id,
-        slug: product.slug,
-        title: product.titel,
-        active_discount: color.active_discount,
-        discount: color.discount,
-        price: color.price,
-        colorId: color.id,
-        color_code: color.color_code,
-        color_name: color.color_name,
-      });
-    } else if (discount) {
-      if (this.validateDiscount(discount)) {
-        if (discount.type === DiscountType.Basket) {
-          discounts.push({
-            percent: discount.percent,
-            amount: discount.amount,
-            code: discount.code,
-            type: discount.type,
-            productId: discount.productId,
+  
+          const existDiscount = discountMap.get(product.id);
+          if (existDiscount && this.validateDiscount(existDiscount)) {
+            discounts.push({
+              percent: existDiscount.percent,
+              amount: existDiscount.amount,
+              code: existDiscount.code,
+              type: existDiscount.type,
+              productId: existDiscount.productId,
+            });
+  
+            if (existDiscount.percent) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+                color.price,
+                existDiscount.percent
+              );
+              color.price = newPrice;
+              discountAmount += newDiscountAmount;
+            } else if (existDiscount.amount) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountAmount(
+                color.price,
+                existDiscount.amount
+              );
+              color.price = newPrice;
+              discountAmount += newDiscountAmount;
+            }
+            totalDiscountAmount += discountAmount;
+          }
+  
+          finalAmount += Number(color.price) * (count || 0);
+  
+          products.push({
+            id: product.id,
+            slug: product.slug,
+            title: product.titel,
+            active_discount: color.active_discount,
+            discount: color.discount,
+            price: color.price,
+            colorId: color.id,
+            color_code: color.color_code,
+            color_name: color.color_name,
+            count: count || 0
           });
-          if (discount.percent) {
-            const {newDiscountAmount, newPrice} = this.checkDiscountPercent(
-              fainalAmont,
-              discount.percent
-            );
-            fainalAmont = newPrice;
-            discountAmount = +newDiscountAmount;
-          } else if (discount.amount) {
-            const {newDiscountAmount, newPrice} = this.checkDiscountAmount(
-              fainalAmont,
-              discount.amount
-            );
-            fainalAmont = newPrice;
-            discountAmount = newDiscountAmount;
+  
+        } else if (discount && this.validateDiscount(discount)) {
+          // اعمال تخفیف‌های سبد خرید
+          if (discount.type === DiscountType.Basket) {
+            discounts.push({
+              percent: discount.percent,
+              amount: discount.amount,
+              code: discount.code,
+              type: discount.type,
+              productId: discount.productId,
+            });
+  
+            if (discount.percent) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountPercent(
+                finalAmount,
+                discount.percent
+              );
+              finalAmount = newPrice;
+              discountAmount += newDiscountAmount;
+            } else if (discount.amount) {
+              const { newDiscountAmount, newPrice } = this.checkDiscountAmount(
+                finalAmount,
+                discount.amount
+              );
+              finalAmount = newPrice;
+              discountAmount += newDiscountAmount;
+            }
+            totalDiscountAmount += discountAmount;
           }
-          totoalDiscountAmount += discountAmount;
         }
       }
+  
+      return {
+        totalPrice,
+        finalAmount,
+        totalDiscountAmount,
+        productDiscounts,
+        products,
+        discounts,
+      };
+  
+    } catch (error) {
+      console.error('Error in getBasket:', error);
+      throw new Error('Failed to retrieve basket.');
     }
-    }
-  return {
-    totoalPrice,
-    fainalAmont,
-    totoalDiscountAmount,
-    productDiscounts,
-    products,
-    discounts,
-  };
-
-    
-
-   
   }
+  
+
 
 
  async addToBasket(basketDto:BasketDto){
@@ -409,27 +441,33 @@ async removeDiscountBasket(discountDto:DiscountBasketDto){
    
 }
 
+
+
 validateDiscount(discount: DiscountEntity) {
-  let limitCondition = discount.limit && discount.limit > discount.usage;
-  let timeCondition = discount.expierIn && discount.expierIn > new Date();
-  return limitCondition || timeCondition;
+  const limitCondition = discount.limit ? discount.limit > discount.usage : true;
+  const timeCondition = discount.expierIn ? discount.expierIn > new Date() : true;
+  return limitCondition && timeCondition;
 }
+
 checkDiscountPercent(price: number, percent: number) {
-  let newDiscountAmount = +price * (+percent / 100);
-  let newPrice = +newDiscountAmount > +price ? 0 : +price - newDiscountAmount;
+  if (percent < 0 || percent > 100) {
+    throw new Error('درصد تخفیف نامعتبر است');
+  }
+  const newDiscountAmount = price * (percent / 100);
+  const newPrice = newDiscountAmount > price ? 0 : price - newDiscountAmount;
   return {
     newPrice,
     newDiscountAmount,
   };
 }
+
 checkDiscountAmount(price: number, amount: number) {
-  let newPrice = +amount > +price ? 0 : +price - +amount;
+  const newPrice = amount > price ? 0 : price - amount;
   return {
     newPrice,
-    newDiscountAmount: +amount,
+    newDiscountAmount: amount,
   };
 }
-
 
 
 }
