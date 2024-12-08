@@ -1,6 +1,7 @@
 import { EntityName } from "src/common/enum/entity-name.enum";
+import { OrderEntity } from "src/modules/order/entitis/order.entity";
 import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { OrderEntity } from "../order/entitis/order.entity";
+
 
 @Entity(EntityName.Payment)
 export class PaymentEntity{
