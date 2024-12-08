@@ -7,9 +7,10 @@ import { BasketService } from '../basket/basket.service';
 import { ProductModule } from '../product/product.module';
 import { DiscountModule } from '../discount/discount.module';
 import { BasketEntity } from '../basket/entitis/basket.entity';
+import { HttpApiModules } from '../http/http.module';
 
 @Module({
-  imports:[DiscountModule,ProductModule,TypeOrmModule.forFeature([PaymentEntity,BasketEntity])],
+  imports:[DiscountModule,ProductModule,HttpApiModules,TypeOrmModule.forFeature([PaymentEntity,BasketEntity])],
   controllers: [PaymentController],
   providers: [PaymentService,BasketService],
 })
