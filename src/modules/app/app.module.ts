@@ -6,6 +6,7 @@ import { DiscountModule } from '../discount/discount.module';
 import { BasketModule } from '../basket/basket.module';
 import { PaymentModule } from '../payment/payment.module';
 import { OrderModule } from '../order/order.module';
+import { UserModule } from '../user/user.module';
 
 
 @Module({
@@ -15,6 +16,7 @@ import { OrderModule } from '../order/order.module';
     BasketModule,
     PaymentModule,
     OrderModule,
+    UserModule,
     TypeOrmModule.forRoot(typeOrmConfig())],
   controllers: [],
   providers: [],
