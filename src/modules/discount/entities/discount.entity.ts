@@ -1,7 +1,8 @@
 import { EntityName } from "src/common/enum/entity-name.enum";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DiscountType } from "../enum/discount.enum";
 import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
+import { UserEntity } from "src/modules/user/entity/user.entity";
 
 @Entity(EntityName.Discount)
 export class DiscountEntity {
@@ -21,6 +22,8 @@ export class DiscountEntity {
   usage: number;
   @Column({ nullable: true })
   productId: number;
+  @Column({ nullable: true })
+  userId: number;
   @Column({ default: false })
   active: boolean;
   @Column({ type: "enum", enum: DiscountType })
@@ -28,4 +31,6 @@ export class DiscountEntity {
 
       @OneToMany(() => BasketEntity, (basket) => basket.discount)
       basket: BasketEntity[];
+      @ManyToOne(()=>UserEntity,user=>user.discount,{onDelete:'CASCADE'})
+      user:UserEntity
 }

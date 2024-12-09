@@ -8,6 +8,7 @@ import { AdminStatus, UserStatus } from "../enum/user.enum";
 import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
 import { OrderEntity } from "src/modules/order/entitis/order.entity";
 import { PaymentEntity } from "src/modules/payment/entity/pament.entity";
+import { DiscountEntity } from "src/modules/discount/entities/discount.entity";
 
 
 @Entity(EntityName.User)
@@ -58,6 +59,9 @@ export class UserEntity {
 
    @OneToMany(()=>PaymentEntity,(payment)=>payment.user)
    payment:PaymentEntity[]
+
+   @OneToMany(()=>DiscountEntity,(discount)=>discount.user)
+   discount:DiscountEntity[]
 
 
    @Column({nullable:true})

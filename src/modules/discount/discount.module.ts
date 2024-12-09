@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscountEntity } from './entities/discount.entity';
 import { ProductService } from '../product/service/product.service';
 import { ProductEnitiy } from '../product/entitis/product.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([DiscountEntity,ProductEnitiy])],
+  imports:[AuthModule,TypeOrmModule.forFeature([DiscountEntity,ProductEnitiy])],
   controllers: [DiscountController],
   providers: [DiscountService,ProductService],
   exports: [DiscountService,TypeOrmModule],

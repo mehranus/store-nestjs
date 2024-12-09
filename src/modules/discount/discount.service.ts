@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DiscountEntity } from './entities/discount.entity';
 import { DeepPartial, Repository } from 'typeorm';
@@ -6,15 +6,20 @@ import { ProductService } from '../product/service/product.service';
 import { DiscountDto, UpdateDiscountDto } from './dto/discount.dto';
 import { toBoolean } from 'src/common/utils/function.util';
 import { DiscountType } from './enum/discount.enum';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 
-@Injectable()
+@Injectable({scope:Scope.REQUEST})
 export class DiscountService {
   constructor(
     @InjectRepository(DiscountEntity) private readonly discountRepository:Repository<DiscountEntity>,
-    private readonly productServise:ProductService
+    private readonly productServise:ProductService,
+    @Inject(REQUEST) private readonly req:Request
   ){}
 
   async create(createDto:DiscountDto){
+      const userId=this.req?.admin?.id
+      if(!userId) throw new  BadRequestException("you not acsess")
     const {active,amount,code,expierIn,limit,percent,productId,type}=createDto
     const discountObject:DeepPartial<DiscountEntity>={}
 
@@ -23,6 +28,7 @@ export class DiscountService {
     if (codecheck) throw new ConflictException("alredy code befor exist!")
     discountObject['code']=code;
     discountObject['active']=toBoolean(active)
+    discountObject['userId']=userId
 
 
     if(type == DiscountType.Product){
@@ -125,7 +131,10 @@ export class DiscountService {
   }
 
   async checkDiscount(id:number){
-    const discount=await this.discountRepository.findOneBy({id})
+    const userId=this.req?.admin?.id
+    if(!userId) throw new BadRequestException(' you not acsess')
+    const discount=await this.discountRepository.findOne({
+      where:{id,userId}})
     if(!discount) throw new NotFoundException("discount not found!")
       return discount
   }

@@ -3,9 +3,12 @@ import { DiscountService } from './discount.service';
 import { DiscountDto, UpdateDiscountDto } from './dto/discount.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { TypeData } from 'src/common/enum/type-data.enum';
+import { UserAuth } from 'src/common/decorators/auth.decorator';
+import { SkipAuth } from 'src/common/decorators/skip-auth.decorator';
 
 @Controller('discount')
 @ApiTags("Discount")
+@UserAuth()
 export class DiscountController {
   constructor(private readonly discountService: DiscountService) {}
   
@@ -24,6 +27,7 @@ export class DiscountController {
   }
 
   @Get()
+  @SkipAuth()
   find() {
     return this.discountService.find();
   }
