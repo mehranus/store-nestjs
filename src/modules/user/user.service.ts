@@ -1,7 +1,7 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, Scope, UnauthorizedException } from "@nestjs/common";
+import { BadGatewayException, BadRequestException, ConflictException, Inject, Injectable, NotFoundException, Scope, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity } from "./entity/user.entity";
-import { Repository } from "typeorm";
+import { DeepPartial, Repository } from "typeorm";
 import { UserAdressEntity } from "./entity/addres.entity";
 import { OtpEntity } from "./entity/otp.entity";
 import { JwtService } from "@nestjs/jwt";
@@ -11,7 +11,7 @@ import { TokenPailod } from "../auth/types/paylod";
 import { checkOtpDto } from "../auth/dto/auth.dto";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
-import { UserStatus } from "./enum/user.enum";
+import { AdminStatus, UserStatus } from "./enum/user.enum";
 
 
 @Injectable({scope:Scope.REQUEST})
@@ -49,31 +49,31 @@ export class UserService{
   // }
 
 
-  async checkOtp(checkOtpDto:checkOtpDto){
-    const {mobile,code}=checkOtpDto
-    const user=await this.userRepository.findOne({
-      where:{phone:mobile},
-      relations:{
-        otp:true
-      }
-    })
-    const now=new Date();
-    if(!user || !user?.otp) throw new UnauthorizedException("Not Find User Accoant")
-      const otp=user?.otp;
-    if(otp?.code !== code) throw new UnauthorizedException("code is inccrement");
-    if(otp?.expiresIn < now ) throw new UnauthorizedException(" code is expired") 
-      if(!user.verifay_mobail){
-        await this.userRepository.update({id:user.id},{
-          verifay_mobail:true
-        })
-      }
-      const {acssesToken,refreshToken}=this.makeTokenForUser({mobile:mobile,userId:user.id})
-      return {
-        acssesToken,
-        refreshToken,
-        message:"you logged_in sucessfuly"
-      }
-  }
+  // async checkOtp(checkOtpDto:checkOtpDto){
+  //   const {mobile,code}=checkOtpDto
+  //   const user=await this.userRepository.findOne({
+  //     where:{phone:mobile},
+  //     relations:{
+  //       otp:true
+  //     }
+  //   })
+  //   const now=new Date();
+  //   if(!user || !user?.otp) throw new UnauthorizedException("Not Find User Accoant")
+  //     const otp=user?.otp;
+  //   if(otp?.code !== code) throw new UnauthorizedException("code is inccrement");
+  //   if(otp?.expiresIn < now ) throw new UnauthorizedException(" code is expired") 
+  //     if(!user.verifay_mobail){
+  //       await this.userRepository.update({id:user.id},{
+  //         verifay_mobail:true
+  //       })
+  //     }
+  //     const {acssesToken,refreshToken}=this.makeTokenForUser({mobile:mobile,userId:user.id})
+  //     return {
+  //       acssesToken,
+  //       refreshToken,
+  //       message:"you logged_in sucessfuly"
+  //     }
+  // }
 
 
   async update(updateDto:UpdateUserDto){
@@ -181,8 +181,18 @@ export class UserService{
 
 
   async getUser(){
-    const {id:userId}=this.req.user
-    return await this.userRepository.findOneBy({id:userId})
+    const userId=this.req?.admin?.id
+    let user:DeepPartial<UserEntity>={}
+    if(typeof userId === 'undefined'){
+      user={}
+    }else{
+      user= await this.userRepository.findOneBy({id:userId})
+    }
+    if(!user.id || user.status_user === AdminStatus.User){
+      throw new BadGatewayException("you not acsess for show user")
+    }else{
+      return await this.userRepository.find({})
+    }
   }
 
 }

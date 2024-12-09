@@ -18,11 +18,11 @@ export class UserController{
   //  return this.userService.signUp(signUpDto)
   // }
 
-  @Post('check-otp')
-  @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
-  checkOtp(@Body() checkDto:checkOtpDto){
-    return this.userService.checkOtp(checkDto)
-  }
+  // @Post('check-otp')
+  // @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
+  // checkOtp(@Body() checkDto:checkOtpDto){
+  //   return this.userService.checkOtp(checkDto)
+  // }
 
   @Get()
   getUser(){

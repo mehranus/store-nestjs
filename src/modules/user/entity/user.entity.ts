@@ -4,7 +4,7 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn
 import { UserAdressEntity } from "./addres.entity";
 import { OtpEntity } from "./otp.entity";
 
-import { UserStatus } from "../enum/user.enum";
+import { AdminStatus, UserStatus } from "../enum/user.enum";
 import { BasketEntity } from "src/modules/basket/entitis/basket.entity";
 import { OrderEntity } from "src/modules/order/entitis/order.entity";
 import { PaymentEntity } from "src/modules/payment/entity/pament.entity";
@@ -30,6 +30,9 @@ export class UserEntity {
 
    @Column({default:UserStatus.Rejected})
    status:string
+
+   @Column({type:'enum',enum:AdminStatus,default:AdminStatus.User})
+   status_user:string
 
    @Column({default:false,nullable:true})
    verifay_mobail:boolean

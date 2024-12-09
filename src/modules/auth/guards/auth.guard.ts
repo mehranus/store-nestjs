@@ -10,6 +10,7 @@ import { Observable } from "rxjs";
 import { AuthService } from "../auth.service";
 import { Reflector } from "@nestjs/core";
 import { SKIP_AUTH, SkipAuth } from "src/common/decorators/skip-auth.decorator";
+import { AdminStatus } from "src/modules/user/enum/user.enum";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -27,7 +28,13 @@ export class AuthGuard implements CanActivate {
    
     const token = this.extarcToken(request);
     const user=await this.authServic.validateAcsesToken(token);
-    request.user = user;
+    if(user.status_user === AdminStatus.User){
+      request.user = user;
+    }else if(user.status_user === AdminStatus.Admin){
+      request.admin=user
+    }else if(user.status_user === AdminStatus.SuperAdmin){
+      request.superAdmin=user
+    }
     return true;
   }
 
