@@ -8,4 +8,7 @@ export enum EntityName{
   Order='order',
   OrderItem='order-item',
   Payment='payment',
+  UserAdress='user-address',
+  Otp='otp',
+  User='user'
 }

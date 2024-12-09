@@ -3,6 +3,7 @@ import { DiscountEntity } from "src/modules/discount/entities/discount.entity";
 import { ProductColorEnitiy } from "src/modules/product/entitis/product-color.entity";
 import { ProductSizeEnitiy } from "src/modules/product/entitis/product-size.entity";
 import { ProductEnitiy } from "src/modules/product/entitis/product.entity";
+import { UserEntity } from "src/modules/user/entity/user.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 
@@ -19,6 +20,8 @@ export class BasketEntity{
   sizeId:number
   @Column({nullable:true})
   discountId:number
+  @Column()
+  userId:number
 
   @Column()
   count:number
@@ -31,4 +34,6 @@ export class BasketEntity{
   size:ProductSizeEnitiy
   @ManyToOne(()=>DiscountEntity,discount=>discount.basket,{onDelete:"CASCADE"})
   discount:DiscountEntity
+  @ManyToOne(()=>UserEntity,user=>user.baskets,{onDelete:"CASCADE"})
+  user:UserEntity
 }
