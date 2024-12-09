@@ -99,6 +99,7 @@ export class AuthService {
       const paylod=this.jwtSirvis.verify<TokenPailod>(token,{
         secret:process.env.ACSSES_TOKEN_SECRET
       })
+      
       if(typeof paylod=="object" && paylod?.userId){
           const user=await this.userRepository.findOneBy({id:paylod.userId})
           if(!user) throw new UnauthorizedException("login on Accont")

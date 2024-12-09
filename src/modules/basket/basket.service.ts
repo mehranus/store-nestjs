@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BasketEntity } from './entitis/basket.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -13,8 +13,11 @@ import { DiscountBasketDto } from './dto/discount.dto';
 import { DiscountService } from '../discount/discount.service';
 import { DiscountType } from '../discount/enum/discount.enum';
 import { DiscountEntity } from '../discount/entities/discount.entity';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { UserEntity } from '../user/entity/user.entity';
 
-@Injectable()
+@Injectable({scope:Scope.REQUEST})
 export class BasketService {
   constructor(
     @InjectRepository(BasketEntity) private readonly baketRepository:Repository<BasketEntity>,
@@ -22,11 +25,13 @@ export class BasketService {
     private readonly productColorServis:ProductcolorService,
     private readonly productSizeServis:ProductSizeService,
     private readonly discountServis:DiscountService,
+    @Inject(REQUEST) private readonly req:Request
   ){}
 
 
 
   async getBasket() {
+    const {id:userId}=this.req.user
     let products: any[] = [];
     let discounts: any[] = [];
   
@@ -36,7 +41,7 @@ export class BasketService {
   
     try {
       const items = await this.baketRepository.find({
-        where: {},
+        where: {userId},
         relations: {
           product: true,
           color: true,
@@ -277,14 +282,16 @@ export class BasketService {
 
 
  async addToBasket(basketDto:BasketDto){
-
+    const {id:userId}=this.req.user
     const {colorId,productId,sizeId}=basketDto
     let size:ProductSizeEnitiy
     let color:ProductColorEnitiy
     let where:FindOptionsWhere<BasketEntity>={}
     const product=await this.productServis.findOneLaet(productId)
+ 
     if(product.count == 0) throw new BadRequestException("product invertoy not enough")
     where['productId']=product.id
+    where['userId']=userId
     if(product.type === TypeProduct.Sizing && !sizeId){throw new BadRequestException("you sholud select a size")}
     else if(product.type === TypeProduct.Sizing && sizeId){
      
@@ -311,7 +318,8 @@ export class BasketService {
             productId,
             colorId:color?.id,
             sizeId:size?.id,
-            count:1
+            count:1,
+            userId
           })
         }
         await this.baketRepository.save(basketItem)
@@ -322,8 +330,8 @@ export class BasketService {
 
   }
  async removeFromBasketById(id:number){
-
-    let basketItem=await this.baketRepository.findOneBy({id})
+     const {id:userId}=this.req.user
+    let basketItem=await this.baketRepository.findOneBy({id,userId})
     if(basketItem){
       if(basketItem.count <= 1){
         await this.baketRepository.delete({id:basketItem.id})
@@ -342,13 +350,14 @@ export class BasketService {
 
 }
  async removeFromBasket(basketDto:BasketDto){
-
+   const {id:userId}=this.req.user
     const {colorId,productId,sizeId}=basketDto
     let size:ProductSizeEnitiy
     let color:ProductColorEnitiy
     let where:FindOptionsWhere<BasketEntity>={}
     const product=await this.productServis.findOneLaet(productId)
     where['productId']=product.id
+    where['userId']=userId
 
     if(product.type === TypeProduct.Sizing && !sizeId){throw new BadRequestException("you sholud select a size")}
     else if(product.type === TypeProduct.Coloring && sizeId){
@@ -385,12 +394,14 @@ export class BasketService {
 }
 async addDiscountBasket(discountDto:DiscountBasketDto){
   const {code}=discountDto
+  const {id:userId}=this.req.user
   const discont = await this.discountServis.getCodeDiscount(code)
 
   if(!discont) throw new NotFoundException('not found discount')
   if(discont.type === DiscountType.Product && discont.productId){
-    const basketItem=await this.baketRepository.findOneBy({
-      productId:discont.productId
+    const basketItem=await this.baketRepository.findOne({
+      where:{productId:discont.productId,userId}
+
     })
    
     if(!basketItem) throw new BadRequestException('not found item for discount code')
@@ -406,7 +417,6 @@ async addDiscountBasket(discountDto:DiscountBasketDto){
         relations:{discount:true},
         where:{discount:{type:DiscountType.Basket}}
       })
-      console.log(item)
       if(item)throw new BadRequestException("alredy code discount exist") 
       } 
       await this.baketRepository.insert({
@@ -421,12 +431,13 @@ async addDiscountBasket(discountDto:DiscountBasketDto){
    
 }
 async removeDiscountBasket(discountDto:DiscountBasketDto){
+  const {id:userId}=this.req.user
   const {code}=discountDto
   const discont = await this.discountServis.getCodeDiscount(code)
 
   if(!discont) throw new NotFoundException('not found discount')
-      const existDiscount=await this.baketRepository.findOneBy({
-      discountId:discont.id
+      const existDiscount=await this.baketRepository.findOne({
+    where:{discountId:discont.id,userId}
         }) 
     if(existDiscount) {
       await this.baketRepository.delete({id:existDiscount.id})

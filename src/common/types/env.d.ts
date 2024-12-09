@@ -9,6 +9,9 @@ namespace NodeJS{
     DB_PASSWORD:string
     DB_HOST:string
 
+    //! ACCSES_TOKEN
+    REFRESH_TOKEN_SECRET:string
+    ACSSES_TOKEN_SECRET:string
 
     //!ZarinPal
   ZARINPAL_VERIFAY_URL:string

@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BasketEntity } from './entitis/basket.entity';
 import { ProductModule } from '../product/product.module';
 import { DiscountModule } from '../discount/discount.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports:[DiscountModule,ProductModule,TypeOrmModule.forFeature([BasketEntity])],
+  imports:[AuthModule,DiscountModule,ProductModule,TypeOrmModule.forFeature([BasketEntity])],
   controllers: [BasketController],
   providers: [BasketService],
 })

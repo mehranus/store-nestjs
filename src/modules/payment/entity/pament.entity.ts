@@ -21,7 +21,7 @@ export class PaymentEntity{
   
   @Column()
   odrerId:number
-  @Column()
+  @Column({nullable:true})
   userId:number
   @CreateDateColumn()
   created_at:Date

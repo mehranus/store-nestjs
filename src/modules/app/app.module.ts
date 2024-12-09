@@ -11,12 +11,13 @@ import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     ProductModule,
     DiscountModule,
     BasketModule,
     PaymentModule,
     OrderModule,
-    UserModule,
+   
     TypeOrmModule.forRoot(typeOrmConfig())],
   controllers: [],
   providers: [],

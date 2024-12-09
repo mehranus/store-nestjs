@@ -10,9 +10,11 @@ import { BasketEntity } from '../basket/entitis/basket.entity';
 import { HttpApiModules } from '../http/http.module';
 import { OredrItemEntity } from '../order/entitis/order-item.entity';
 import { OrderEntity } from '../order/entitis/order.entity';
+import { UserAdressEntity } from '../user/entity/addres.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports:[DiscountModule,ProductModule,HttpApiModules,TypeOrmModule.forFeature([PaymentEntity,BasketEntity,OredrItemEntity,OrderEntity])],
+  imports:[AuthModule,DiscountModule,ProductModule,HttpApiModules,TypeOrmModule.forFeature([PaymentEntity,BasketEntity,OredrItemEntity,OrderEntity,UserAdressEntity])],
   controllers: [PaymentController],
   providers: [PaymentService,BasketService],
 })

@@ -25,28 +25,28 @@ export class UserService{
   ){}
 
 
-  async signUp(signupDto:UserSignUpDto){
-    const {phone}=signupDto
-    let user=await this.userRepository.findOne({
-      where:{phone},
-        relations:{otp:true}   
-    })
-    if(!user) {
-      const mobileNumber=parseInt(phone)
-    user=  this.userRepository.create({
-       phone,
-        invait_code:mobileNumber.toString(32).toUpperCase()
-        }) 
-     await this.userRepository.save(user)  
-      }
-      if(user.otp?.expiresIn >= new Date(new Date().getTime())) throw new BadRequestException("code alreday befor send")
-     await this.createOtpUser(user)
+  // async signUp(signupDto:UserSignUpDto){
+  //   const {phone}=signupDto
+  //   let user=await this.userRepository.findOne({
+  //     where:{phone},
+  //       relations:{otp:true}   
+  //   })
+  //   if(!user) {
+  //     const mobileNumber=parseInt(phone)
+  //   user=  this.userRepository.create({
+  //      phone,
+  //       invait_code:mobileNumber.toString(32).toUpperCase()
+  //       }) 
+  //    await this.userRepository.save(user)  
+  //     }
+  //     if(user.otp?.expiresIn >= new Date(new Date().getTime())) throw new BadRequestException("code alreday befor send")
+  //    await this.createOtpUser(user)
 
-     return{
-      message:"user created sucsesfully"
-     } 
+  //    return{
+  //     message:"user created sucsesfully"
+  //    } 
 
-  }
+  // }
 
 
   async checkOtp(checkOtpDto:checkOtpDto){
@@ -179,5 +179,10 @@ export class UserService{
       return addres
   }
 
+
+  async getUser(){
+    const {id:userId}=this.req.user
+    return await this.userRepository.findOneBy({id:userId})
+  }
 
 }

@@ -1,11 +1,14 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { BasketService } from './basket.service';
 import { BasketDto } from './dto/basket.dto';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { TypeData } from 'src/common/enum/type-data.enum';
 import { DiscountBasketDto } from './dto/discount.dto';
+import { UserAuth } from 'src/common/decorators/auth.decorator';
 
 @Controller('basket')
+@ApiTags("Basket")
+@UserAuth()
 export class BasketController {
   constructor(private readonly basketService: BasketService) {}
 

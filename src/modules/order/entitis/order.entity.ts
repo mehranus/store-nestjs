@@ -14,8 +14,6 @@ export class OrderEntity{
   @Column({type:'enum',enum:OrderStatus,default:OrderStatus.Pending})
   status:string
   @Column()
-  address:string
-  @Column()
   final_amount:number
   @Column()
   discount_amount:number
@@ -23,9 +21,9 @@ export class OrderEntity{
   total_amount:number
   @Column({nullable:true})
   paymentId:number
-  @Column()
+  @Column({nullable:true})
   addresId:number
-  @Column()
+  @Column({nullable:true})
   userId:number
 
   @CreateDateColumn()

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentEntity } from './entity/pament.entity';
 import { Repository } from 'typeorm';
@@ -9,19 +9,29 @@ import { OrderEntity } from '../order/entitis/order.entity';
 import { OrderStatus } from '../order/enum/order.enum';
 import * as shortid from 'shortid';
 import { AddressDto } from './dto/payment.dto';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { UserService } from '../user/user.service';
+import { UserEntity } from '../user/entity/user.entity';
+import { UserAdressEntity } from '../user/entity/addres.entity';
 
-@Injectable()
+@Injectable({scope:Scope.REQUEST})
 export class PaymentService {
   constructor(
     @InjectRepository(PaymentEntity) private readonly paymentRepository:Repository<PaymentEntity>,
     @InjectRepository(OrderEntity) private readonly orderRepository:Repository<OrderEntity>,
     @InjectRepository(OredrItemEntity) private readonly orderItemRepository:Repository<OredrItemEntity>,
+    @InjectRepository(UserAdressEntity) private readonly userAddresRepository:Repository<UserAdressEntity>,
     private readonly basketServise:BasketService,
-    private readonly zarinpallServise:ZarinPallService
+    private readonly zarinpallServise:ZarinPallService,
+    @Inject(REQUEST) private readonly req:Request
   ){}
 
   async create(addressDto:AddressDto){
-    const {address}=addressDto
+    const {id:userId}=this.req.user
+    const {addressId}=addressDto
+
+    const address=await this.userAddresRepository.findOneBy({id:addressId,userId})
     const basket=await this.basketServise.getBasket()
     const data:any={
       amount:basket.finalAmount,
@@ -35,8 +45,9 @@ export class PaymentService {
       total_amount:basket.totalPrice,
       discount_amount:basket.totalDiscountAmount,
       final_amount:basket.finalAmount,
-      address,
-      status:OrderStatus.Pending
+      addresId:address.id,
+      status:OrderStatus.Pending,
+      userId
     })
     order=await this.orderRepository.save(order)
 
@@ -60,7 +71,8 @@ export class PaymentService {
       authority,
       status:false,
       invoice_number:shortid.generate(),
-      odrerId:order.id
+      odrerId:order.id,
+      userId
     })
 
     payment =await this.paymentRepository.save(payment)

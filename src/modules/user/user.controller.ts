@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { UpdateUserDto, UserSignUpDto } from "./dto/user.dto";
@@ -8,14 +8,15 @@ import { UserAuth } from "src/common/decorators/auth.decorator";
 
 @Controller("User")
 @ApiTags("User")
+@UserAuth()
 export class UserController{
   constructor(private readonly userService:UserService){}
  
-  @Post()
-  @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
-  singUp(@Body()signUpDto:UserSignUpDto){
-   return this.userService.signUp(signUpDto)
-  }
+  // @Post()
+  // @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
+  // singUp(@Body()signUpDto:UserSignUpDto){
+  //  return this.userService.signUp(signUpDto)
+  // }
 
   @Post('check-otp')
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
@@ -23,8 +24,12 @@ export class UserController{
     return this.userService.checkOtp(checkDto)
   }
 
+  @Get()
+  getUser(){
+    return this.userService.getUser()
+  }
   @Post('updateInfo')
-  @UserAuth()
+
   @ApiConsumes(TypeData.UrlEncoded,TypeData.Json)
   update(@Body() updateDto:UpdateUserDto){
     return this.userService.update(updateDto)
