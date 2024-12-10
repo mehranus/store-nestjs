@@ -8,14 +8,15 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { ProductService } from "../service/product.service";
 import { CreateColorDto, UpdateColorDto } from "../dto/Product.dto";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { TypeData } from "src/common/enum/type-data.enum";
 import { ProductcolorService } from "../service/product-color.service";
+import { UserAuth } from "src/common/decorators/auth.decorator";
 
 @Controller("product-color")
 @ApiTags("Product-Color")
+@UserAuth()
 export class ProductColorController {
   constructor(private readonly productService: ProductcolorService) {}
 

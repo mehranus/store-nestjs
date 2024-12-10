@@ -13,9 +13,11 @@ import { CreateDitelsDto, UpdateDitelsDto } from "../dto/Product.dto";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { TypeData } from "src/common/enum/type-data.enum";
 import { ProductDitelService } from "../service/product-ditels.service";
+import { UserAuth } from "src/common/decorators/auth.decorator";
 
 @Controller("product-ditels")
 @ApiTags("Product-Detils")
+@UserAuth()
 export class ProductDetilsController {
   constructor(private readonly productDitelService: ProductDitelService) {}
 

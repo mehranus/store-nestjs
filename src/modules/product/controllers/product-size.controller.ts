@@ -13,9 +13,11 @@ import { CreateSizeDto, UpdateSizeDto } from "../dto/Product.dto";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { TypeData } from "src/common/enum/type-data.enum";
 import { ProductSizeService } from "../service/product-size.service";
+import { UserAuth } from "src/common/decorators/auth.decorator";
 
 @Controller("product-size")
 @ApiTags("Product-Size")
+@UserAuth()
 export class ProductSizeController {
   constructor(private readonly productService: ProductSizeService) {}
 

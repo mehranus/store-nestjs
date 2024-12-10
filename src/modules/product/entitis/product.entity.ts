@@ -16,7 +16,7 @@ export class ProductEnitiy{
   titel:string
   @Column()
   content:string
-  @Column()
+  @Column({nullable:true})
   slug:string
   @Column({enum:TypeProduct})
   type:string

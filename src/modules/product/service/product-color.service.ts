@@ -1,31 +1,35 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  Scope,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ProductEnitiy } from "../entitis/product.entity";
-import { DataSource, DeepPartial, Repository } from "typeorm";
-import { CreateDitelsDto, CreateProductDto, CreateColorDto, UpdateDitelsDto, UpdateProductDto, UpdateColorDto } from "../dto/Product.dto";
+import { DataSource,  Repository } from "typeorm";
+import {  CreateColorDto,  UpdateColorDto } from "../dto/Product.dto";
 import { TypeProduct } from "../enum/product.enum";
 import { toBoolean } from "src/common/utils/function.util";
-import { ProductDitelsEnitiy } from "../entitis/product-ditels.entity";
-import { ProductService } from "./product.service";
-import { ProductColorEnitiy } from "../entitis/product-color.entity";
 
-@Injectable()
+
+import { ProductColorEnitiy } from "../entitis/product-color.entity";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
+
+@Injectable({scope:Scope.REQUEST})
 export class ProductcolorService {
   constructor(
     @InjectRepository(ProductColorEnitiy)
     private readonly productColorRepository: Repository<ProductColorEnitiy>,
-    @InjectRepository(ProductEnitiy)
-    private readonly productRepository: Repository<ProductEnitiy>,
-    private readonly productServise:ProductService,
+    @Inject(REQUEST) private readonly req:Request,
+ 
     private readonly dataSorece:DataSource
     
   ) {}
 
   async create(colorDto: CreateColorDto) {
+    if(!this.req.admin) throw new BadRequestException("you not acsess")
     const queryRunner=this.dataSorece.createQueryRunner()
     await queryRunner.connect()
     try {

@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  Scope,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ProductEnitiy } from "../entitis/product.entity";
@@ -9,15 +11,19 @@ import { DeepPartial, Repository } from "typeorm";
 import { CreateProductDto, UpdateProductDto } from "../dto/Product.dto";
 import { TypeProduct } from "../enum/product.enum";
 import { toBoolean } from "src/common/utils/function.util";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 
-@Injectable()
+@Injectable({scope:Scope.REQUEST})
 export class ProductService {
   constructor(
     @InjectRepository(ProductEnitiy)
-    private readonly productRepository: Repository<ProductEnitiy>
+    private readonly productRepository: Repository<ProductEnitiy>,
+    @Inject(REQUEST) private readonly req:Request
   ) {}
 
   async create(productDto: CreateProductDto) {
+    if(!this.req.admin) throw new BadRequestException("you not acsess")
     const {
       active_discount,
       code,
@@ -85,7 +91,8 @@ export class ProductService {
       relations: { color: true, size: true, ditels: true },
       select:{ditels:{
         key:true,value:true
-      }}
+      }},
+      order:{id:'DESC'}
     });
   }
 

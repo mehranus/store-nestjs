@@ -12,8 +12,11 @@ import { ProductService } from "../service/product.service";
 import { CreateProductDto, UpdateProductDto } from "../dto/Product.dto";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { TypeData } from "src/common/enum/type-data.enum";
+import { UserAuth } from "src/common/decorators/auth.decorator";
+import { SkipAuth } from "src/common/decorators/skip-auth.decorator";
 
 @Controller("product")
+@UserAuth()
 @ApiTags("Product")
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
@@ -33,6 +36,7 @@ export class ProductController {
   }
 
   @Get()
+  @SkipAuth()
   find() {
     return this.productService.find();
   }

@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  Scope,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ProductEnitiy } from "../entitis/product.entity";
@@ -11,16 +13,20 @@ import { TypeProduct } from "../enum/product.enum";
 import { toBoolean } from "src/common/utils/function.util";
 import { ProductDitelsEnitiy } from "../entitis/product-ditels.entity";
 import { ProductService } from "./product.service";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 
-@Injectable()
+@Injectable({scope:Scope.REQUEST})
 export class ProductDitelService {
   constructor(
     @InjectRepository(ProductDitelsEnitiy)
     private readonly productDitelRepository: Repository<ProductDitelsEnitiy>,
-    private readonly productServise:ProductService
+    private readonly productServise:ProductService,
+    @Inject(REQUEST) private readonly req:Request
   ) {}
 
   async create(ditelDto: CreateDitelsDto) {
+   if(!this.req.admin) throw new BadRequestException("you not acsess")
     const {key,productId,value}=ditelDto
     await this.productServise.findOneLaet(productId)
     await this.productDitelRepository.insert({key,value,productId})

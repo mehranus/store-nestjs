@@ -12,9 +12,11 @@ import { ProductColorController } from "./controllers/product-color.controller";
 import { ProductDitelService } from "./service/product-ditels.service";
 import { ProductSizeService } from "./service/product-size.service";
 import { ProductcolorService } from "./service/product-color.service";
+import { AuthModule } from "../auth/auth.module";
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([
       ProductEnitiy,
       ProductColorEnitiy,

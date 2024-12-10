@@ -284,6 +284,7 @@ export class BasketService {
  async addToBasket(basketDto:BasketDto){
     const {id:userId}=this.req.user
     const {colorId,productId,sizeId}=basketDto
+    console.log(basketDto,userId)
     let size:ProductSizeEnitiy
     let color:ProductColorEnitiy
     let where:FindOptionsWhere<BasketEntity>={}
